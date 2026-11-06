@@ -177,7 +177,8 @@ public static partial class OnePaceCatalogParser
             return null;
         }
 
-        return new Uri(ImageWidthParam().Replace(uri.AbsoluteUri, "${1}1280"));
+        // Next.js rejects widths not in its configured list (640, 750, 828, 1080, 1200, 1920, 2048, 3840).
+        return new Uri(ImageWidthParam().Replace(uri.AbsoluteUri, "${1}1920"));
     }
 
     private static string Normalize(string text) => Whitespace().Replace(text.Replace('\u00a0', ' '), " ").Trim();

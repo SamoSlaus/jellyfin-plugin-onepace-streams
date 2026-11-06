@@ -27,7 +27,7 @@ public class CatalogParserTests
         Assert.Equal("1–7", arc.MangaChapters);
         Assert.Equal("Arc one description.", arc.Description);
         Assert.Equal(
-            "https://onepace.net/_next/image?url=%2F_next%2Fstatic%2Fmedia%2Ffirst.jpg&w=1280&q=75",
+            "https://onepace.net/_next/image?url=%2F_next%2Fstatic%2Fmedia%2Ffirst.jpg&w=1920&q=75",
             arc.ImageUrl?.AbsoluteUri);
     }
 
