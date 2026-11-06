@@ -47,33 +47,31 @@ Updates will then appear in the catalog automatically.
 
 ## Setup
 
-1. **Create an output folder** that Jellyfin can write to, e.g. on Linux:
-   ```sh
-   sudo mkdir -p /media/onepace
-   sudo chown jellyfin:jellyfin /media/onepace
-   ```
-   In Docker, mount a volume for it (e.g. `-v /srv/onepace:/media/onepace`).
-2. **Configure the plugin** in **Dashboard → Plugins → One Pace Streams**:
+**Nothing to configure.** After installing and restarting Jellyfin, the plugin automatically:
 
-   | Setting | Description |
-   |---------|-------------|
-   | Output folder | Absolute path from step 1, e.g. `/media/onepace`. |
-   | Language | English Subtitles, English Dub, or English Dub with Closed Captions. |
-   | Quality | Preferred resolution. If an episode isn't available in it, the next lower one is used, otherwise the lowest higher one. |
-   | Prefer Extended Cut | Use the Extended Cut for episodes that have one. |
-   | Use another language when the preferred one is missing | E.g. a Dub user still gets the subbed version of not-yet-dubbed arcs. |
-   | Include specials | Write specials to *Season 00*. |
-   | Download arc and episode images | Saves the series poster, logo and backdrop plus season and episode thumbnails next to the files. |
+1. syncs all episodes into `<Jellyfin data folder>/onepace` (e.g. `/var/lib/jellyfin/data/onepace`),
+2. creates a **One Pace** Shows library for that folder (NFO reader on, online metadata fetchers off,
+   chapter/trickplay image extraction off so scans never download whole videos),
+3. scans it. This takes a couple of minutes on first run.
 
-3. **Run the first sync:** **Dashboard → Scheduled Tasks → One Pace → Sync One Pace** → ▶.
-   Afterwards it runs every day at 04:00 (change it on the same page).
-4. **Add a library:** **Dashboard → Libraries → Add Media Library**
-   - Content type: **Shows**
-   - Folder: your output folder (e.g. `/media/onepace`)
-   - Metadata savers / readers: make sure **Nfo** is enabled.
-   - Optionally untick remote metadata providers (TheTVDB, TMDb, …) for this library – everything comes from the NFO files.
+The sync then runs at every server start and daily at 04:00 (change it in **Dashboard → Scheduled Tasks → One Pace**).
 
-That's it – *One Pace* shows up as a series with one season per arc.
+### Settings (optional)
+
+**Dashboard → Plugins → One Pace Streams**:
+
+| Setting | Description |
+|---------|-------------|
+| Output folder | Where the files are written. Empty = `<Jellyfin data folder>/onepace`. Docker users may prefer a mounted volume, e.g. `/media/onepace`. |
+| Language | English Subtitles, English Dub, or English Dub with Closed Captions. |
+| Quality | Preferred resolution. If an episode isn't available in it, the next lower one is used, otherwise the lowest higher one. |
+| Prefer Extended Cut | Use the Extended Cut for episodes that have one. |
+| Use another language when the preferred one is missing | E.g. a Dub user still gets the subbed version of not-yet-dubbed arcs. |
+| Include specials | Write specials to *Season 00*. |
+| Download arc and episode images | Saves the series poster, logo and backdrop plus season and episode thumbnails next to the files. |
+| Create a "One Pace" library on the next sync | On by default for new installs; turns itself off after running. Skipped if a library already contains the output folder. Tick it again if you deleted the library or changed the output folder. |
+
+After changing settings, run **Dashboard → Scheduled Tasks → One Pace → Sync One Pace** to apply them immediately.
 
 ## What gets written
 

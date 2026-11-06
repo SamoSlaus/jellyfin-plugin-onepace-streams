@@ -6,7 +6,7 @@ namespace Jellyfin.Plugin.OnePaceStreams.Configuration;
 /// <summary>Plugin settings.</summary>
 public class PluginConfiguration : BasePluginConfiguration
 {
-    /// <summary>Gets or sets the absolute folder to write into; add it as a Shows library.</summary>
+    /// <summary>Gets or sets the absolute folder to write into; empty means "&lt;Jellyfin data&gt;/onepace".</summary>
     public string OutputPath { get; set; } = string.Empty;
 
     /// <summary>Gets or sets the preferred language.</summary>
@@ -26,4 +26,7 @@ public class PluginConfiguration : BasePluginConfiguration
 
     /// <summary>Gets or sets a value indicating whether arc and episode images are downloaded.</summary>
     public bool DownloadArtwork { get; set; } = true;
+
+    /// <summary>Gets or sets a value indicating whether the next sync creates a Shows library for the output folder (if none exists). Reset after use.</summary>
+    public bool CreateLibrary { get; set; } = true;
 }

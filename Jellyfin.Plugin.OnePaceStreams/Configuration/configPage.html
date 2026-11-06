@@ -11,8 +11,8 @@
                 <form id="OnePaceStreamsConfigForm">
                     <div class="inputContainer">
                         <label class="inputLabel inputLabelUnfocused" for="OutputPath">Output folder</label>
-                        <input id="OutputPath" name="OutputPath" type="text" is="emby-input" required />
-                        <div class="fieldDescription">Absolute path, e.g. /media/onepace. Add this folder as a "Shows" library with the Nfo metadata reader enabled.</div>
+                        <input id="OutputPath" name="OutputPath" type="text" is="emby-input" />
+                        <div class="fieldDescription">Absolute path, e.g. /media/onepace. Leave empty to use the "onepace" folder inside Jellyfin's data directory.</div>
                     </div>
                     <div class="selectContainer">
                         <label class="selectLabel" for="Language">Language</label>
@@ -55,6 +55,13 @@
                             <span>Download arc and episode images</span>
                         </label>
                     </div>
+                    <div class="checkboxContainer checkboxContainer-withDescription">
+                        <label class="emby-checkbox-label">
+                            <input id="CreateLibrary" name="CreateLibrary" type="checkbox" is="emby-checkbox" />
+                            <span>Create a "One Pace" library on the next sync</span>
+                        </label>
+                        <div class="fieldDescription checkboxFieldDescription">Skipped if a library already contains the output folder. Turns itself off afterwards.</div>
+                    </div>
                     <div>
                         <button is="emby-button" type="submit" class="raised button-submit block emby-button">
                             <span>Save</span>
@@ -68,7 +75,7 @@
             (function () {
                 var pluginUniqueId = 'b3c1d7e2-5f4a-4c8e-9a61-2d7f0e8c4a39';
                 var page = document.querySelector('#OnePaceStreamsConfigPage');
-                var checkboxes = ['PreferExtendedCut', 'AllowLanguageFallback', 'IncludeSpecials', 'DownloadArtwork'];
+                var checkboxes = ['PreferExtendedCut', 'AllowLanguageFallback', 'IncludeSpecials', 'DownloadArtwork', 'CreateLibrary'];
 
                 page.addEventListener('pageshow', function () {
                     Dashboard.showLoadingMsg();
