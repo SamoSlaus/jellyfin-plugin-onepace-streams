@@ -1,0 +1,48 @@
+name: Release
+
+on:
+  push:
+    tags: ['v*']
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+
+      - name: Test
+        run: dotnet test
+
+      - name: Build zip
+        run: |
+          VERSION="${GITHUB_REF_NAME#v}"
+          dotnet publish Jellyfin.Plugin.OnePaceStreams -c Release -o out \
+            -p:Version="$VERSION" -p:AssemblyVersion="$VERSION" -p:FileVersion="$VERSION"
+          ZIP="onepace-streams_${VERSION}.zip"
+          zip -j "$ZIP" out/Jellyfin.Plugin.OnePaceStreams.dll out/AngleSharp.dll
+          echo "VERSION=$VERSION" >> "$GITHUB_ENV"
+          echo "ZIP=$ZIP" >> "$GITHUB_ENV"
+
+      - name: Create GitHub release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh release create "$GITHUB_REF_NAME" "$ZIP" --title "$GITHUB_REF_NAME" --generate-notes
+
+      - name: Add version to manifest.json
+        run: |
+          mv "$ZIP" "$RUNNER_TEMP/"
+          git checkout main
+          python3 .github/scripts/update_manifest.py "$VERSION" "$RUNNER_TEMP/$ZIP" "$GITHUB_REPOSITORY"
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git commit -am "manifest: add $VERSION"
+          git push origin main

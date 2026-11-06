@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>One Pace Streams</title>
+</head>
+<body>
+    <div id="OnePaceStreamsConfigPage" data-role="page" class="page type-interior pluginConfigurationPage" data-require="emby-input,emby-button,emby-select,emby-checkbox">
+        <div data-role="content">
+            <div class="content-primary">
+                <form id="OnePaceStreamsConfigForm">
+                    <div class="inputContainer">
+                        <label class="inputLabel inputLabelUnfocused" for="OutputPath">Output folder</label>
+                        <input id="OutputPath" name="OutputPath" type="text" is="emby-input" required />
+                        <div class="fieldDescription">Absolute path, e.g. /media/onepace. Add this folder as a "Shows" library with the Nfo metadata reader enabled.</div>
+                    </div>
+                    <div class="selectContainer">
+                        <label class="selectLabel" for="Language">Language</label>
+                        <select is="emby-select" id="Language" name="Language" class="emby-select-withcolor emby-select">
+                            <option value="Sub">English Subtitles</option>
+                            <option value="Dub">English Dub</option>
+                            <option value="DubCC">English Dub with Closed Captions</option>
+                        </select>
+                    </div>
+                    <div class="selectContainer">
+                        <label class="selectLabel" for="Quality">Quality</label>
+                        <select is="emby-select" id="Quality" name="Quality" class="emby-select-withcolor emby-select">
+                            <option value="1080">1080p</option>
+                            <option value="720">720p</option>
+                            <option value="480">480p</option>
+                        </select>
+                        <div class="fieldDescription">If an episode isn't available in this quality, the next lower one is used, otherwise the lowest higher one.</div>
+                    </div>
+                    <div class="checkboxContainer checkboxContainer-withDescription">
+                        <label class="emby-checkbox-label">
+                            <input id="PreferExtendedCut" name="PreferExtendedCut" type="checkbox" is="emby-checkbox" />
+                            <span>Prefer Extended Cut</span>
+                        </label>
+                    </div>
+                    <div class="checkboxContainer checkboxContainer-withDescription">
+                        <label class="emby-checkbox-label">
+                            <input id="AllowLanguageFallback" name="AllowLanguageFallback" type="checkbox" is="emby-checkbox" />
+                            <span>Use another language when the preferred one is missing</span>
+                        </label>
+                    </div>
+                    <div class="checkboxContainer checkboxContainer-withDescription">
+                        <label class="emby-checkbox-label">
+                            <input id="IncludeSpecials" name="IncludeSpecials" type="checkbox" is="emby-checkbox" />
+                            <span>Include specials (Season 00)</span>
+                        </label>
+                    </div>
+                    <div class="checkboxContainer checkboxContainer-withDescription">
+                        <label class="emby-checkbox-label">
+                            <input id="DownloadArtwork" name="DownloadArtwork" type="checkbox" is="emby-checkbox" />
+                            <span>Download arc and episode images</span>
+                        </label>
+                    </div>
+                    <div>
+                        <button is="emby-button" type="submit" class="raised button-submit block emby-button">
+                            <span>Save</span>
+                        </button>
+                    </div>
+                    <div class="fieldDescription">Run "Sync One Pace" from Dashboard &gt; Scheduled Tasks to apply changes immediately.</div>
+                </form>
+            </div>
+        </div>
+        <script type="text/javascript">
+            (function () {
+                var pluginUniqueId = 'b3c1d7e2-5f4a-4c8e-9a61-2d7f0e8c4a39';
+                var page = document.querySelector('#OnePaceStreamsConfigPage');
+                var checkboxes = ['PreferExtendedCut', 'AllowLanguageFallback', 'IncludeSpecials', 'DownloadArtwork'];
+
+                page.addEventListener('pageshow', function () {
+                    Dashboard.showLoadingMsg();
+                    ApiClient.getPluginConfiguration(pluginUniqueId).then(function (config) {
+                        page.querySelector('#OutputPath').value = config.OutputPath || '';
+                        page.querySelector('#Language').value = config.Language;
+                        page.querySelector('#Quality').value = String(config.Quality);
+                        checkboxes.forEach(function (name) {
+                            page.querySelector('#' + name).checked = !!config[name];
+                        });
+                        Dashboard.hideLoadingMsg();
+                    });
+                });
+
+                page.querySelector('#OnePaceStreamsConfigForm').addEventListener('submit', function (e) {
+                    e.preventDefault();
+                    Dashboard.showLoadingMsg();
+                    ApiClient.getPluginConfiguration(pluginUniqueId).then(function (config) {
+                        config.OutputPath = page.querySelector('#OutputPath').value.trim();
+                        config.Language = page.querySelector('#Language').value;
+                        config.Quality = parseInt(page.querySelector('#Quality').value, 10);
+                        checkboxes.forEach(function (name) {
+                            config[name] = page.querySelector('#' + name).checked;
+                        });
+                        ApiClient.updatePluginConfiguration(pluginUniqueId, config).then(function (result) {
+                            Dashboard.processPluginConfigurationUpdateResult(result);
+                        });
+                    });
+                    return false;
+                });
+            })();
+        </script>
+    </div>
+</body>
+</html>

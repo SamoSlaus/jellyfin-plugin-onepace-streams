@@ -1,0 +1,11 @@
+[
+  {
+    "guid": "b3c1d7e2-5f4a-4c8e-9a61-2d7f0e8c4a39",
+    "name": "One Pace Streams",
+    "description": "Adds One Pace to your library as .strm files that stream from Pixeldrain.",
+    "overview": "Stream One Pace from Pixeldrain without downloading it.",
+    "owner": "SamoSlaus",
+    "category": "General",
+    "versions": []
+  }
+]
