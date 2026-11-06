@@ -31,10 +31,10 @@ public sealed class SyncOnePaceTask(
         var config = Plugin.Instance?.Configuration ?? throw new InvalidOperationException("Plugin is not initialised.");
 
         progress.Report(0);
-        var arcs = await catalogClient.GetArcsAsync(cancellationToken).ConfigureAwait(false);
+        var catalog = await catalogClient.GetCatalogAsync(cancellationToken).ConfigureAwait(false);
         progress.Report(20);
 
-        var result = await syncService.SyncAsync(arcs, config, cancellationToken).ConfigureAwait(false);
+        var result = await syncService.SyncAsync(catalog, config, cancellationToken).ConfigureAwait(false);
         logger.LogInformation(
             "One Pace sync: {Episodes} episodes, {Written} written, {Unchanged} unchanged, {Deleted} deleted, {Skipped} without a matching variant",
             result.Episodes,

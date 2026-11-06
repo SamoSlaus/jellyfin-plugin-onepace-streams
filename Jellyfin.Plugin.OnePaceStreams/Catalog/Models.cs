@@ -47,3 +47,6 @@ public sealed record Arc(
     string? Description,
     Uri? ImageUrl,
     IReadOnlyList<Episode> Episodes);
+
+/// <summary>The parsed catalog page.</summary>
+public sealed record OnePaceCatalog(IReadOnlyList<Arc> Arcs, Uri? LogoUrl);

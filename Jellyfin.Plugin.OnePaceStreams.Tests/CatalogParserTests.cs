@@ -6,8 +6,16 @@ public class CatalogParserTests
 {
     private static readonly Uri BaseUri = new("https://onepace.net/en/watch");
 
-    internal static IReadOnlyList<Arc> LoadSample() =>
+    internal static OnePaceCatalog LoadSampleCatalog() =>
         OnePaceCatalogParser.Parse(File.ReadAllText(Path.Combine(AppContext.BaseDirectory, "Fixtures", "watch-sample.html")), BaseUri);
+
+    internal static IReadOnlyList<Arc> LoadSample() => LoadSampleCatalog().Arcs;
+
+    [Fact]
+    public void ParsesPngLogo()
+    {
+        Assert.Equal("https://onepace.net/_next/static/media/logo.png", LoadSampleCatalog().LogoUrl?.AbsoluteUri);
+    }
 
     [Fact]
     public void ParsesArcsInPageOrder()
@@ -102,8 +110,10 @@ public class CatalogParserTests
             Assert.Skip("ONEPACE_WATCH_HTML not set");
         }
 
-        var arcs = OnePaceCatalogParser.Parse(File.ReadAllText(path), BaseUri);
+        var catalog = OnePaceCatalogParser.Parse(File.ReadAllText(path), BaseUri);
+        var arcs = catalog.Arcs;
 
+        Assert.NotNull(catalog.LogoUrl);
         Assert.True(arcs.Count >= 30);
         var romanceDawn = arcs.Single(a => a.Slug == "romance-dawn");
         Assert.Equal(4, romanceDawn.Episodes.Count);

@@ -63,7 +63,7 @@ Updates will then appear in the catalog automatically.
    | Prefer Extended Cut | Use the Extended Cut for episodes that have one. |
    | Use another language when the preferred one is missing | E.g. a Dub user still gets the subbed version of not-yet-dubbed arcs. |
    | Include specials | Write specials to *Season 00*. |
-   | Download arc and episode images | Saves season and episode thumbnails next to the files. |
+   | Download arc and episode images | Saves the series poster, logo and backdrop plus season and episode thumbnails next to the files. |
 
 3. **Run the first sync:** **Dashboard → Scheduled Tasks → One Pace → Sync One Pace** → ▶.
    Afterwards it runs every day at 04:00 (change it on the same page).
@@ -82,6 +82,9 @@ That's it – *One Pace* shows up as a series with one season per arc.
 ├── .onepace-manifest.json          ← list of files the plugin owns
 └── One Pace/
     ├── tvshow.nfo
+    ├── poster.jpg                  ← generated: first arc image + One Pace logo
+    ├── backdrop.jpg
+    ├── logo.png
     ├── Season 00/                  ← specials
     ├── Season 01/                  ← Romance Dawn
     │   ├── season.nfo

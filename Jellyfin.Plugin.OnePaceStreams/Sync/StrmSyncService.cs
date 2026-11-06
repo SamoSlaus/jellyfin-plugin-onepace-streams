@@ -20,14 +20,14 @@ public sealed class StrmSyncService(IHttpClientFactory httpClientFactory, ILogge
     public const string ManifestFileName = ".onepace-manifest.json";
 
     /// <summary>Applies the catalog to the output folder.</summary>
-    /// <param name="arcs">Arcs from the catalog.</param>
+    /// <param name="catalog">The catalog.</param>
     /// <param name="config">Settings.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>The result.</returns>
-    public async Task<SyncResult> SyncAsync(IReadOnlyList<Arc> arcs, PluginConfiguration config, CancellationToken cancellationToken)
+    public async Task<SyncResult> SyncAsync(OnePaceCatalog catalog, PluginConfiguration config, CancellationToken cancellationToken)
     {
         var root = ResolveRoot(config.OutputPath);
-        var plan = LibraryPlanner.Build(arcs, config);
+        var plan = LibraryPlanner.Build(catalog.Arcs, config, catalog.LogoUrl);
         if (plan.EpisodeCount == 0)
         {
             throw new InvalidOperationException("The catalog yielded no playable episodes; refusing to sync so the existing library is kept.");
@@ -68,6 +68,16 @@ public sealed class StrmSyncService(IHttpClientFactory httpClientFactory, ILogge
             {
                 desired.Add(image.RelativePath);
             }
+        }
+
+        if (config.DownloadArtwork && await EnsurePosterAsync(root, cancellationToken).ConfigureAwait(false))
+        {
+            written++;
+        }
+
+        if (config.DownloadArtwork && File.Exists(Path.Combine(root, LibraryPlanner.SeriesPosterPath)))
+        {
+            desired.Add(LibraryPlanner.SeriesPosterPath);
         }
 
         var stale = previous.Where(p => !desired.Contains(p)).ToList();
@@ -136,10 +146,7 @@ public sealed class StrmSyncService(IHttpClientFactory httpClientFactory, ILogge
             }
 
             var bytes = await response.Content.ReadAsByteArrayAsync(cancellationToken).ConfigureAwait(false);
-            Directory.CreateDirectory(Path.GetDirectoryName(path)!);
-            var temp = path + ".tmp";
-            await File.WriteAllBytesAsync(temp, bytes, cancellationToken).ConfigureAwait(false);
-            File.Move(temp, path, overwrite: true);
+            await WriteBytesAsync(path, bytes, cancellationToken).ConfigureAwait(false);
             return true;
         }
         catch (HttpRequestException ex)
@@ -147,6 +154,39 @@ public sealed class StrmSyncService(IHttpClientFactory httpClientFactory, ILogge
             logger.LogWarning(ex, "Artwork download {Url} failed", source);
             return false;
         }
+    }
+
+    private async Task<bool> EnsurePosterAsync(string root, CancellationToken cancellationToken)
+    {
+        var poster = Path.Combine(root, LibraryPlanner.SeriesPosterPath);
+        var backdrop = Path.Combine(root, LibraryPlanner.SeriesBackdropPath);
+        var logo = Path.Combine(root, LibraryPlanner.SeriesLogoPath);
+        if (File.Exists(poster) || !File.Exists(backdrop) || !File.Exists(logo))
+        {
+            return false;
+        }
+
+        try
+        {
+            var image = PosterComposer.Compose(
+                await File.ReadAllBytesAsync(backdrop, cancellationToken).ConfigureAwait(false),
+                await File.ReadAllBytesAsync(logo, cancellationToken).ConfigureAwait(false));
+            await WriteBytesAsync(poster, image, cancellationToken).ConfigureAwait(false);
+            return true;
+        }
+        catch (Exception ex) when (ex is InvalidDataException or DllNotFoundException or TypeInitializationException)
+        {
+            logger.LogWarning(ex, "Could not create the series poster");
+            return false;
+        }
+    }
+
+    private static async Task WriteBytesAsync(string path, byte[] bytes, CancellationToken cancellationToken)
+    {
+        Directory.CreateDirectory(Path.GetDirectoryName(path)!);
+        var temp = path + ".tmp";
+        await File.WriteAllBytesAsync(temp, bytes, cancellationToken).ConfigureAwait(false);
+        File.Move(temp, path, overwrite: true);
     }
 
     private bool DeleteOwnedFile(string root, string relative)

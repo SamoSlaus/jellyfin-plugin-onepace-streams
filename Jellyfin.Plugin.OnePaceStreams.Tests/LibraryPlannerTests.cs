@@ -67,12 +67,21 @@ public class LibraryPlannerTests
     [Fact]
     public void PlansArtworkOnlyWhenEnabled()
     {
-        var arcs = CatalogParserTests.LoadSample();
+        var catalog = CatalogParserTests.LoadSampleCatalog();
 
         Assert.Equal(
-            [P("One Pace", "Season 01", "One Pace - S01E01-thumb.jpg"), P("One Pace", "Season 01", "One Pace - S01E02-thumb.jpg"), P("One Pace", "Season 01", "folder.jpg")],
-            LibraryPlanner.Build(arcs, Config).Images.Select(i => i.RelativePath));
-        Assert.Empty(LibraryPlanner.Build(arcs, new PluginConfiguration { DownloadArtwork = false }).Images);
+            [
+                P("One Pace", "backdrop.jpg"),
+                P("One Pace", "logo.png"),
+                P("One Pace", "Season 01", "One Pace - S01E01-thumb.jpg"),
+                P("One Pace", "Season 01", "One Pace - S01E02-thumb.jpg"),
+                P("One Pace", "Season 01", "folder.jpg"),
+            ],
+            LibraryPlanner.Build(catalog.Arcs, Config, catalog.LogoUrl).Images.Select(i => i.RelativePath));
+        Assert.Equal(
+            "https://onepace.net/_next/image?url=%2F_next%2Fstatic%2Fmedia%2Ffirst.jpg&w=1920&q=75",
+            LibraryPlanner.Build(catalog.Arcs, Config, catalog.LogoUrl).Images[0].Source.AbsoluteUri);
+        Assert.Empty(LibraryPlanner.Build(catalog.Arcs, new PluginConfiguration { DownloadArtwork = false }, catalog.LogoUrl).Images);
     }
 
     [Fact]

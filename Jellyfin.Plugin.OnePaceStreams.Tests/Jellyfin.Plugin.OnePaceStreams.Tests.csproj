@@ -12,6 +12,8 @@
     <PackageReference Include="xunit.v3" Version="4.0.2" />
     <PackageReference Include="Jellyfin.Controller" Version="12.2.0" />
     <PackageReference Include="Jellyfin.Model" Version="12.2.0" />
+    <PackageReference Include="SkiaSharp" Version="3.119.4" />
+    <PackageReference Include="SkiaSharp.NativeAssets.Linux" Version="3.119.4" />
   </ItemGroup>
 
   <ItemGroup>

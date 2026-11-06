@@ -19,14 +19,37 @@ public static class LibraryPlanner
     /// <summary>Series folder name inside the output folder.</summary>
     public const string SeriesFolder = "One Pace";
 
+    /// <summary>Series poster, composed from <see cref="SeriesBackdropPath"/> and <see cref="SeriesLogoPath"/>.</summary>
+    public static readonly string SeriesPosterPath = Path.Combine(SeriesFolder, "poster.jpg");
+
+    /// <summary>Series backdrop (first arc image).</summary>
+    public static readonly string SeriesBackdropPath = Path.Combine(SeriesFolder, "backdrop.jpg");
+
+    /// <summary>Series logo.</summary>
+    public static readonly string SeriesLogoPath = Path.Combine(SeriesFolder, "logo.png");
+
     /// <summary>Builds the plan.</summary>
     /// <param name="arcs">Arcs in page order.</param>
     /// <param name="config">Settings.</param>
+    /// <param name="logoUrl">One Pace logo.</param>
     /// <returns>The plan.</returns>
-    public static LibraryPlan Build(IReadOnlyList<Arc> arcs, PluginConfiguration config)
+    public static LibraryPlan Build(IReadOnlyList<Arc> arcs, PluginConfiguration config, Uri? logoUrl = null)
     {
         var files = new List<PlannedFile> { new(Path.Combine(SeriesFolder, "tvshow.nfo"), NfoWriter.Series()) };
         var images = new List<PlannedImage>();
+        if (config.DownloadArtwork)
+        {
+            var backdrop = arcs.FirstOrDefault(a => !a.IsSpecial && a.ImageUrl is not null)?.ImageUrl;
+            if (backdrop is not null)
+            {
+                images.Add(new(SeriesBackdropPath, backdrop));
+            }
+
+            if (logoUrl is not null)
+            {
+                images.Add(new(SeriesLogoPath, logoUrl));
+            }
+        }
         var season = 0;
         var specialEpisode = 0;
         var episodeCount = 0;

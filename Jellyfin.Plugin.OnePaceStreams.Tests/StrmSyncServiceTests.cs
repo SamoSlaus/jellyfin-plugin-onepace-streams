@@ -135,3 +135,9 @@ public sealed class StrmSyncServiceTests : IDisposable
         public HttpClient CreateClient(string name) => throw new InvalidOperationException("No HTTP expected in tests.");
     }
 }
+
+internal static class StrmSyncServiceTestExtensions
+{
+    public static Task<SyncResult> SyncAsync(this StrmSyncService service, IReadOnlyList<Arc> arcs, PluginConfiguration config, CancellationToken cancellationToken) =>
+        service.SyncAsync(new OnePaceCatalog(arcs, null), config, cancellationToken);
+}

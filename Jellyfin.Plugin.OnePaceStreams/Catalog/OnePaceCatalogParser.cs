@@ -11,11 +11,11 @@ public static partial class OnePaceCatalogParser
     private const string MangaChaptersLabel = "Covered manga chapters";
     private const string SpecialPrefix = "Special:";
 
-    /// <summary>Parses all arcs, in page order.</summary>
+    /// <summary>Parses all arcs, in page order, and the One Pace logo.</summary>
     /// <param name="html">Page HTML.</param>
     /// <param name="baseUri">URL the page was loaded from.</param>
-    /// <returns>The arcs.</returns>
-    public static IReadOnlyList<Arc> Parse(string html, Uri baseUri)
+    /// <returns>The catalog.</returns>
+    public static OnePaceCatalog Parse(string html, Uri baseUri)
     {
         var document = new HtmlParser().ParseDocument(html);
         var arcs = new List<Arc>();
@@ -46,7 +46,22 @@ public static partial class OnePaceCatalogParser
                 ParseEpisodes(segment, baseUri)));
         }
 
-        return arcs;
+        return new OnePaceCatalog(arcs, ParseLogoUrl(document, baseUri));
+    }
+
+    private static Uri? ParseLogoUrl(IDocument document, Uri baseUri)
+    {
+        foreach (var meta in document.QuerySelectorAll("meta[property='og:image'][content]"))
+        {
+            if (Uri.TryCreate(baseUri, meta.GetAttribute("content"), out var uri)
+                && IsCatalogHost(uri, baseUri)
+                && uri.AbsolutePath.EndsWith(".png", StringComparison.OrdinalIgnoreCase))
+            {
+                return uri;
+            }
+        }
+
+        return null;
     }
 
     internal static bool TryParseVariant(string label, out Language language, out Cut cut)
@@ -166,13 +181,7 @@ public static partial class OnePaceCatalogParser
     private static Uri? GetImageUrl(IElement scope, Uri baseUri)
     {
         var src = scope.QuerySelector("img[src]")?.GetAttribute("src");
-        if (string.IsNullOrEmpty(src) || !Uri.TryCreate(baseUri, src, out var uri))
-        {
-            return null;
-        }
-
-        // Only fetch artwork from the catalog's own host.
-        if (uri.Scheme != Uri.UriSchemeHttps || !string.Equals(uri.Host, baseUri.Host, StringComparison.OrdinalIgnoreCase))
+        if (string.IsNullOrEmpty(src) || !Uri.TryCreate(baseUri, src, out var uri) || !IsCatalogHost(uri, baseUri))
         {
             return null;
         }
@@ -180,6 +189,10 @@ public static partial class OnePaceCatalogParser
         // Next.js rejects widths not in its configured list (640, 750, 828, 1080, 1200, 1920, 2048, 3840).
         return new Uri(ImageWidthParam().Replace(uri.AbsoluteUri, "${1}1920"));
     }
+
+    // Only fetch artwork from the catalog's own host.
+    private static bool IsCatalogHost(Uri uri, Uri baseUri) =>
+        uri.Scheme == Uri.UriSchemeHttps && string.Equals(uri.Host, baseUri.Host, StringComparison.OrdinalIgnoreCase);
 
     private static string Normalize(string text) => Whitespace().Replace(text.Replace('\u00a0', ' '), " ").Trim();
 
